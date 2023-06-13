@@ -2,6 +2,8 @@ package pages.listing;
 
 import org.openqa.selenium.*;
 
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
 import org.testng.Assert;
 import pages.base.BasePage;
 
@@ -12,46 +14,47 @@ import java.util.List;
 public class ListingPage extends BasePage {
     public ListingPage(WebDriver driver) {
         super(driver);
+        PageFactory.initElements(driver, this);
     }
+    @FindBy(xpath = "//nav[contains(@class, 'pagBlock')]//ul//li[last()-1]")
+    WebElement lastPageNumberButton;
 
-    private final By lastPageNumberButton = By.xpath("//nav[contains(@class, 'pagBlock')]//ul//li[last()-1]");
-    private final By nextPageBtn = By.xpath("//nav[contains(@class, 'pagBlock')]//ul//li[last()]");
-    private final By previousPageBtn = By.xpath("//nav[contains(@class, \"pagBlock\")]//ul//li[1]");
-
-    private final By selectDrpSorting = By.xpath("//div[contains(@class, \"absDrop\")]");
-
-
-    private final By lastCardElement = By.xpath("//div[contains(@class, \"goodWrap\") ][last()]");
-    private final By cookiesAccept = By.xpath("//div[contains(@class, \"cookiesAccept\")]");
-
+    @FindBy(xpath = "//nav[contains(@class, 'pagBlock')]//ul//li[last()]")
+    WebElement nextPageBtn;
+    @FindBy(xpath = "//nav[contains(@class, \"pagBlock\")]//ul//li[1]")
+    WebElement previousPageBtn;
+    @FindBy(xpath = "//div[contains(@class, \"absDrop\")]")
+    WebElement selectDrpSorting;
+    @FindBy(xpath = "//div[contains(@class, \"goodWrap\") ][last()]")
+    WebElement lastCardElement;
+    @FindBy(xpath = "//div[contains(@class, \"cookiesAccept\")]")
+    WebElement cookiesAccept;
 
 
     private final By price = By.xpath("//div[@class=\"newPrice\"]");
     public By price(int i){
-
         return By.xpath(
                 "//div[@class=\"newPrice\"][" + i + "]" +
                         "//span");
     }
 
-
     public int getPagesNumber(){
         waitElementIsVisibleFluent(lastPageNumberButton);
-        return Integer.parseInt(driver.findElement(lastPageNumberButton).getText());
+        return Integer.parseInt(lastPageNumberButton.getText());
     }
 
     public ListingPage goNextPage(){
 
         waitElementIsVisibleFluent(nextPageBtn);
         waitElementIsClickable(nextPageBtn);
-        driver.findElement(nextPageBtn).click();
+        nextPageBtn.click();
         return this;
     }
 
     public ListingPage goPreviousPage(){
         waitElementIsVisibleFluent(previousPageBtn);
         waitElementIsClickable(previousPageBtn);
-        driver.findElement(previousPageBtn).click();
+        previousPageBtn.click();
         return this;
     }
 
@@ -59,8 +62,8 @@ public class ListingPage extends BasePage {
         WebElement dropdown = waitElementIsVisible(selectDrpSorting);
         dropdown.click();
         By sortXpath =  By.xpath("//li[@class='d-block ']//a[contains(text(), '" + sortType + "')]");
-        WebElement sort = waitElementIsVisible(sortXpath);
-        sort.click();
+        WebElement sortElement = waitElementIsVisible(driver.findElement(sortXpath));
+        sortElement.click();
         return this;
     }
 
@@ -91,10 +94,8 @@ public class ListingPage extends BasePage {
 
 
         for (WebElement element : priceElements){
-
             for(int ii=0;;ii++){
                 try {
-
                     priceText=element.getText();
                     break;
                 }catch (StaleElementReferenceException e){
@@ -106,7 +107,6 @@ public class ListingPage extends BasePage {
             pricesValue.add(Integer.parseInt( priceText));
         }
 
-
         return pricesValue;
     }
 
@@ -115,22 +115,17 @@ public class ListingPage extends BasePage {
         List<Integer> elements;
         int pagesNumber = getPagesNumber();
         for (int currentPage = 1; currentPage <= pagesNumber; currentPage++){
+            waitElementIsVisibleFluent(lastCardElement);
             elements=getPricesOfElementsFromPage();
             if (elements.size()==0)
                 break;
 
-            if (currentPage==pagesNumber){
-                allPrices.addAll(elements);
-            }else {
-                waitElementIsVisibleFluent(lastCardElement);
-                waitElementIsVisibleFluent(lastPageNumberButton);
-                allPrices.addAll(elements);
+            allPrices.addAll(elements);
 
-                WebElement cookieMessage = driver.findElement(cookiesAccept);
-                ((JavascriptExecutor) driver).executeScript("arguments[0].remove()", cookieMessage);
-                goNextPage();
-                waitUrlContains("page"+(currentPage+1));
-            }
+            ((JavascriptExecutor) driver).executeScript("arguments[0].remove()", cookiesAccept);
+            goNextPage();
+            waitUrlContains("page"+(currentPage+1));
+
 
         }
         return allPrices;

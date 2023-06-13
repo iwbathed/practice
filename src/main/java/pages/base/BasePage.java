@@ -22,20 +22,20 @@ public class BasePage {
         driver.get(url);
     }
 
-    public void waitElementIsVisibleFluent(By byValue){
+    public void waitElementIsVisibleFluent(WebElement element){
         FluentWait wait = new FluentWait(driver);
 
         wait.withTimeout(Duration.ofSeconds(EXPLICITLY_WAIT));
         wait.pollingEvery(Duration.ofMillis(100));
         wait.ignoring(NoSuchElementException.class);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(byValue));
+        wait.until(ExpectedConditions.visibilityOf(element));
     }
-    public WebElement waitElementIsVisible(By byValue){
-        return new WebDriverWait(driver, Duration.ofSeconds(EXPLICITLY_WAIT)).until(ExpectedConditions.visibilityOfElementLocated(byValue));
+    public WebElement waitElementIsVisible(WebElement element){
+        return new WebDriverWait(driver, Duration.ofSeconds(EXPLICITLY_WAIT)).until(ExpectedConditions.visibilityOf(element));
     }
 
-    public WebElement waitElementIsClickable(By byValue){
-        return new WebDriverWait(driver, Duration.ofSeconds(EXPLICITLY_WAIT)).until(ExpectedConditions.elementToBeClickable(byValue));
+    public WebElement waitElementIsClickable(WebElement element){
+        return new WebDriverWait(driver, Duration.ofSeconds(EXPLICITLY_WAIT)).until(ExpectedConditions.elementToBeClickable(element));
     }
 
     public void waitUrlContains(String text){
