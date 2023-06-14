@@ -1,5 +1,6 @@
 package pages.home;
 
+import constants.Constant;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
@@ -27,12 +28,12 @@ public class HomePage extends BasePage {
         return this;
     }
 
-    public HomePage chooseFromCatalog(String catalogName){
+    public HomePage chooseFromCatalog(Constant.CatalogNames catalogName){
 
         catalog.click();
 
         WebElement catalogToChoseElement = driver.findElement(
-                By.xpath("//a[contains(text(),  '" + catalogName + "')]")
+                By.xpath("//a[contains(text(),  '" + catalogName.getValue() + "')]")
         );
         waitElementIsVisible(catalogToChoseElement);
         catalogToChoseElement.click();

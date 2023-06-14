@@ -1,5 +1,8 @@
 package pages.listing;
 
+import constants.Constant.PageDirection;
+import constants.Constant.SortDirection;
+import constants.Constant.SortTypes;
 import org.openqa.selenium.*;
 
 import org.openqa.selenium.support.FindBy;
@@ -18,7 +21,6 @@ public class ListingPage extends BasePage {
     }
     @FindBy(xpath = "//nav[contains(@class, 'pagBlock')]//ul//li[last()-1]")
     WebElement lastPageNumberButton;
-
     @FindBy(xpath = "//nav[contains(@class, 'pagBlock')]//ul//li[last()]")
     WebElement nextPageBtn;
     @FindBy(xpath = "//nav[contains(@class, \"pagBlock\")]//ul//li[1]")
@@ -29,7 +31,6 @@ public class ListingPage extends BasePage {
     WebElement lastCardElement;
     @FindBy(xpath = "//div[contains(@class, \"cookiesAccept\")]")
     WebElement cookiesAccept;
-
 
     private final By price = By.xpath("//div[@class=\"newPrice\"]");
     public By price(int i){
@@ -43,55 +44,48 @@ public class ListingPage extends BasePage {
         return Integer.parseInt(lastPageNumberButton.getText());
     }
 
-    public ListingPage goNextPage(){
-
-        waitElementIsVisibleFluent(nextPageBtn);
-        waitElementIsClickable(nextPageBtn);
-        nextPageBtn.click();
+    public ListingPage goPage(PageDirection direction){
+        WebElement pageBtn;
+        if (direction == PageDirection.NEXT) {
+            pageBtn = nextPageBtn;
+        } else {
+            pageBtn = previousPageBtn;
+        }
+        waitElementIsVisibleFluent(pageBtn);
+        waitElementIsClickable(pageBtn);
+        pageBtn.click();
         return this;
     }
 
-    public ListingPage goPreviousPage(){
-        waitElementIsVisibleFluent(previousPageBtn);
-        waitElementIsClickable(previousPageBtn);
-        previousPageBtn.click();
-        return this;
-    }
-
-    public ListingPage chooseSorting(String sortType){
+    public ListingPage chooseSorting(SortTypes sortType){
         WebElement dropdown = waitElementIsVisible(selectDrpSorting);
         dropdown.click();
-        By sortXpath =  By.xpath("//li[@class='d-block ']//a[contains(text(), '" + sortType + "')]");
+        By sortXpath =  By.xpath("//li[@class='d-block ']//a[contains(text(), '" + sortType.getValue() + "')]");
         WebElement sortElement = waitElementIsVisible(driver.findElement(sortXpath));
         sortElement.click();
         return this;
     }
 
-    public ListingPage isSortedAsc(List<Integer> prices){
-        List<Integer> pricesCopy = new ArrayList<>(prices);
+
+public ListingPage verifySorted(List<Integer> prices, SortDirection sortDirection) {
+    List<Integer> pricesCopy = new ArrayList<>(prices);
+    if (sortDirection == SortDirection.ASCENDING) {
         Collections.sort(pricesCopy);
-        System.out.println(prices);
-        System.out.println(pricesCopy);
-
-        Assert.assertEquals(prices, pricesCopy);
-        return this;
-    }
-
-    public ListingPage isSortedDesc(List<Integer> prices){
-        List<Integer> pricesCopy = new ArrayList<>(prices);
+    } else if (sortDirection == SortDirection.DESCENDING) {
         Collections.sort(pricesCopy, Collections.reverseOrder());
-        System.out.println(prices);
-        System.out.println(pricesCopy);
-        Assert.assertEquals(prices, pricesCopy);
-        return this;
     }
+
+    System.out.println(prices);
+    System.out.println(pricesCopy);
+    Assert.assertEquals(prices, pricesCopy);
+    return this;
+}
 
     public List <Integer> getPricesOfElementsFromPage()  {
 
         List <Integer> pricesValue = new ArrayList<>();
         String priceText;
         List <WebElement> priceElements = driver.findElements(price);
-
 
         for (WebElement element : priceElements){
             for(int ii=0;;ii++){
@@ -123,7 +117,7 @@ public class ListingPage extends BasePage {
             allPrices.addAll(elements);
 
             ((JavascriptExecutor) driver).executeScript("arguments[0].remove()", cookiesAccept);
-            goNextPage();
+            goPage(PageDirection.NEXT);
             waitUrlContains("page"+(currentPage+1));
 
 
